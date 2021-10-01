@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="new server">
+
+    <!-- Enable features -->
+    <featureManager>
+        <feature>jsp-2.3</feature>
+        <feature>cdi-2.0</feature>
+        <feature>jpa-2.2</feature>
+        <feature>servlet-4.0</feature>
+    </featureManager>
+
+    <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                  httpPort="9080"
+                  httpsPort="9443" />
+
+    <!-- Automatically expand WAR files and EAR files -->
+    <applicationManager autoExpand="true"/>
+
+    <!-- Default SSL configuration enables trust for default certificates from the Java runtime -->
+    <ssl id="defaultSSLConfig" trustDefaultCerts="true" />
+
+    <webApplication id="guestbook" name="guestbook" location="guestbook.war" contextRoot="/">
+    </webApplication>
+
+      <!-- Postgres Library Configuration -->
+    <library id="postgresql-library">
+        <fileset dir="${server.config.dir}/resources/" includes="postgres*.jar" />
+    </library>
+
+    <jdbcDriver id="postgresql-driver"
+                javax.sql.XADataSource="org.postgresql.xa.PGXADataSource"
+                javax.sql.ConnectionPoolDataSource="org.postgresql.ds.PGConnectionPoolDataSource"
+                libraryRef="postgresql-library"/>
+  <!-- Datasource Configuration -->
+  <dataSource id="guestbookDS" jndiName="jdbc/guestbookDS" jdbcDriverRef="postgresql-driver"
+                type="javax.sql.ConnectionPoolDataSource"
+                transactional="true">
+        <properties serverName="${env.PG_HOST}"
+                    portNumber="${env.PG_PORT}"
+                    databaseName="${env.PG_DBNAME}"
+                    user="${env.PG_USER}"
+                    password="${env.PG_PASSWORD}"/>
+  
+  </dataSource>    
+  <logging consoleLogLevel="INFO"/>
+
+</server>

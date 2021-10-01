@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestbook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guestbook
+  template:
+    metadata:
+      labels:
+        app: guestbook
+    spec:
+      containers:
+      - name: guestbook
+        image: quay.io/gas_stocktrader/guestbook:0.0.1
+        envFrom:
+          - configMapRef:
+              name: guestbook-config        
+        env:
+          - name: PG_USER
+            valueFrom:
+              secretKeyRef:
+                name: guestbook-secret
+                key: PG_USER            
+          - name: PG_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: guestbook-secret
+                key: PG_PASSWORD    
+        ports:
+            - containerPort: 9080
+            - containerPort: 9443                             
+---
+#Deploy the service
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestbook-service
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
+    - name: https
+      protocol: TCP
+      port: 9443
+      targetPort: 9443
+  selector:
+    app: guestbook
+---
+# Openshift Route
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: guestbook
+spec:
+  to:
+    kind: Service
+    name: guestbook-service
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+
