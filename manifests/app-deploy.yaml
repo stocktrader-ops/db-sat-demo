@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: guestbook
-          image: /gas_stocktrader/guestbook:3b5730930196e2ebc25252b9e35c2aab4b40028a
+          image: quay.io/gas_stocktrader/guestbook:3b5730930196e2ebc25252b9e35c2aab4b40028a
           envFrom:
             - configMapRef:
                 name: guestbook-config
@@ -50,10 +50,6 @@ spec:
       targetPort: 9443
   selector:
     app: guestbook
-  template:
-    spec:
-      containers:
-        - image: /gas_stocktrader/guestbook:3b5730930196e2ebc25252b9e35c2aab4b40028a
 ---
 # Openshift Route
 kind: Route
@@ -69,7 +65,3 @@ spec:
     targetPort: http
   tls:
     termination: edge
-  template:
-    spec:
-      containers:
-        - image: /gas_stocktrader/guestbook:3b5730930196e2ebc25252b9e35c2aab4b40028a
