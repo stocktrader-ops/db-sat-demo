@@ -90,7 +90,7 @@ jobs:
       run: |
         docker login -u="$REGISTRY_USER" -p="$REGISTRY_PASSWORD" "$REGISTRY"
         docker push $REGISTRY/$REGISTRY_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA
-        echo '::set-output name=image-registry-path::$REGISTRY_HOSTNAME/$REGISTRY_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA' 
+        echo '::set-output name=image-registry-path::$REGISTRY/$REGISTRY_NAMESPACE/$IMAGE_NAME:$GITHUB_SHA' 
 
   update-gitops-repo:
     name: Publish image updates to gitops repo
