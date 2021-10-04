@@ -125,7 +125,7 @@ jobs:
         echo "print yq version"
         yq --version
         
-        yq e ".spec.template.spec.containers.image = \"${{needs.setup-build-publish-deploy.image-registry-path}}"\"" -i "${GITOPS_DIR}/app-deploy.yaml"
+        yq e ".spec.template.spec.containers.image = \"${{needs.setup-build-publish-deploy.image-registry-path}}\"" -i "${GITOPS_DIR}/app-deploy.yaml"
 
         # yq w -i "${GITOPS_DIR}/stocktrader-cr.yaml" spec.portfolio.image.tag "${VERSION}"
         # yq e ".spec.portfolio.image.tag = \"$VERSION\"" -i "${GITOPS_DIR}/stocktrader-cr.yaml"
