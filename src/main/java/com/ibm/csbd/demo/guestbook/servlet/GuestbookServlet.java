@@ -23,7 +23,6 @@ public class GuestbookServlet extends HttpServlet {
     @Inject
     private BookEntryDao dao;
 
-
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         System.out.println("in servlet");
       

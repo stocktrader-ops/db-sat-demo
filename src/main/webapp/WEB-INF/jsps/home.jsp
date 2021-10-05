@@ -8,6 +8,15 @@
   </head>
   <body>
     <h1>Welcome to Guestbook!</h1>
+    <%
+    String logo = System.getenv("LOGO");
+    
+    if(logo == null || !logo.equals("aws")) {
+      logo = "IBM_Cloud";
+    }
+
+    %>
+    Application running in: <img src="<%=logo%>_logo.png" height="100">
     <h2>Create new entry</h2>
     <form method="POST" action="Guestbook">
     Your comment: <br>
