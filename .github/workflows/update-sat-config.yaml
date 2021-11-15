@@ -39,10 +39,12 @@ jobs:
     # Scan image   
     - name: Scan image
       run: |
-        IMAGE_DIGEST=`skopeo inspect docker://"$REGISTRY"/"$REGISTRY_NAMESPACE"/"$IMAGE_NAME":"$IMAGE_TAG" | jq -r .Digest`
+        IMAGE_DIGEST=`skopeo inspect docker://$REGISTRY/$REGISTRY_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG | jq -r .Digest`
         echo "digest: $IMAGE_DIGEST"
         
-        curl -o `basename $IMAGE_NAME`.json https://quay.io/api/v1/repository/"$REGISTRY_NAMESPACE"/$IMAGE_NAME/manifest/$IMAGE_DIGEST/security?vulnerabilities=true
+        echo "url: https://quay.io/api/v1/repository/$REGISTRY_NAMESPACE/$IMAGE_NAME/manifest/$IMAGE_DIGEST/security?vulnerabilities=true"
+        
+        curl -o `basename $IMAGE_NAME`.json https://quay.io/api/v1/repository/$REGISTRY_NAMESPACE/$IMAGE_NAME/manifest/$IMAGE_DIGEST/security?vulnerabilities=true
        
         ls -la
         cat guestbook.json
