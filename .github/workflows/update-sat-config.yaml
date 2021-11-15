@@ -33,15 +33,16 @@ env:
   IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
   
   jobs:
-  push-sat-config:
-    name: Push sat config
+    push-sat-config:
+      name: Push sat config
 
-    steps:
+      steps:
 
-    # Checkout app repo
-    - name: Checkout
-      uses: IBM/satellite-config-actions@v1
-      with:
-        apikey: '${IBM_CLOUD_API_KEY}'
-        filename: 'manifests/guestbook-deployment.yaml'
-        channelUuid: '${SAT_CHANNEL_UUID}'
+      # Checkout app repo
+      - name: Checkout
+        uses: IBM/satellite-config-actions@v1
+        with:
+          apikey: '${IBM_CLOUD_API_KEY}'
+          filename: 'manifests/guestbook-deployment.yaml'
+          channelUuid: '${SAT_CHANNEL_UUID}'
+          versionName: 'guestbook-v${GITHUB_SHA}'
