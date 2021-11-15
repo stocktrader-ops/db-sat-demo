@@ -36,6 +36,9 @@ jobs:
   push-sat-config:
     runs-on: ubuntu-latest
     steps:
+    # Checkout repo   
+    - name: Checkout
+      uses: actions/checkout@v2    
     # Create new version
     - name: Update Sat Config
       uses: IBM/satellite-config-actions@v1
