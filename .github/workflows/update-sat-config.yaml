@@ -1,0 +1,47 @@
+# This workflow will:
+# - create sat config version
+#
+### Before you begin:
+# - Create sat config in IBM Cloud
+# - ...
+
+# Name of the workflow
+name: Update Sat Config
+
+on: 
+  workflow_dispatch:
+  
+# Environment variables available to all jobs and steps in this workflow
+env:
+  # EDIT secrets with with your registry, registry path, and apikey
+  REGISTRY: quay.io
+  REGISTRY_NAMESPACE: gas_stocktrader
+  # EDIT with your registry username.
+  REGISTRY_USER: gas_stocktrader+quaytrader
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  IMAGE_NAME: guestbook
+  
+  GITHUB_SHA: ${{ github.sha }}
+  
+  GITOPS_REPO: stocktrader-ops/guestbook
+  GITOPS_DIR: manifests
+  GITOPS_USERNAME: ${{ secrets.GITOPS_USERNAME }}
+  GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}  
+  
+  # Sat config env
+  SAT_CHANNEL_UUID: ${{ secrets.SAT_CHANNEL_UUID }}
+  IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+  
+  jobs:
+  push-sat-config:
+    name: Push sat config
+
+    steps:
+
+    # Checkout app repo
+    - name: Checkout
+      uses: IBM/satellite-config-actions@v1
+      with:
+        apikey: '${IBM_CLOUD_API_KEY}'
+        filename: 'manifests/guestbook-deployment.yaml'
+        channelUuid: '${SAT_CHANNEL_UUID}'
