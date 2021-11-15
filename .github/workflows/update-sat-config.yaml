@@ -40,11 +40,12 @@ jobs:
     - name: Scan image
       run: |
         IMAGE_DIGEST=`skopeo inspect docker://"$REGISTRY"/"$REGISTRY_NAMESPACE"/"$IMAGE_NAME":"$GITHUB_SHA" | jq -r .Digest`
-        echo $IMAGE_DIGEST
+        echo "digest: $IMAGE_DIGEST"
         
         curl -o `basename $IMAGE_NAME`.json https://quay.io/api/v1/repository/"$REGISTRY_NAMESPACE"/$IMAGE_NAME/manifest/$IMAGE_DIGEST/security?vulnerabilities=true
        
         ls -la
+        cat guestbook.json
         
         jq '.data.Layer.Features[]' `basename $IMAGE_NAME`.json | jq -c '{"Name":.Name,"Version":.Version,"Advisory":.Vulnerabilities[]} | select(.Advisory.Severity=="High") | {"Advisory":.Advisory.Name,"Link":.Advisory.Link,"PACKAGE":.Name,"CURRENT VERSION":.Version,"FIXED IN VERSION":.Advisory.FixedBy }'
         
