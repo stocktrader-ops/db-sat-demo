@@ -21,7 +21,7 @@ env:
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   IMAGE_NAME: guestbook
   
-  GITHUB_SHA: ${{ github.sha }}
+  GITHUB_SHA: d914ff6b6c196e2ef3c648b66a5287758b90d4f1
   
   GITOPS_REPO: stocktrader-ops/guestbook
   GITOPS_DIR: manifests
