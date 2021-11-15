@@ -21,7 +21,7 @@ env:
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   IMAGE_NAME: guestbook
   
-  GITHUB_SHA: d914ff6b6c196e2ef3c648b66a5287758b90d4f1
+  IMAGE_TAG: d914ff6b6c196e2ef3c648b66a5287758b90d4f1
   
   GITOPS_REPO: stocktrader-ops/guestbook
   GITOPS_DIR: manifests
@@ -39,7 +39,7 @@ jobs:
     # Scan image   
     - name: Scan image
       run: |
-        IMAGE_DIGEST=`skopeo inspect docker://"$REGISTRY"/"$REGISTRY_NAMESPACE"/"$IMAGE_NAME":"$GITHUB_SHA" | jq -r .Digest`
+        IMAGE_DIGEST=`skopeo inspect docker://"$REGISTRY"/"$REGISTRY_NAMESPACE"/"$IMAGE_NAME":"$IMAGE_TAG" | jq -r .Digest`
         echo "digest: $IMAGE_DIGEST"
         
         curl -o `basename $IMAGE_NAME`.json https://quay.io/api/v1/repository/"$REGISTRY_NAMESPACE"/$IMAGE_NAME/manifest/$IMAGE_DIGEST/security?vulnerabilities=true
