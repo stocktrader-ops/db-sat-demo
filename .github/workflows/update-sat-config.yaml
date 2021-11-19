@@ -71,5 +71,5 @@ jobs:
       with:
         apikey: ${IBM_CLOUD_API_KEY}
         filename: 'manifests/guestbook-deployment.yaml'
-        channel_id: ${SAT_CHANNEL_UUID}
-        version_name: guestbook-v${GITHUB_SHA}
+        channel_id: 14e5eb8c-96b9-40ad-ac68-274156fd7958
+        version_name: guestbook-v1.1
