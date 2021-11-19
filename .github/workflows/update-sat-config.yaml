@@ -69,7 +69,7 @@ jobs:
     - name: Update Sat Config
       uses: IBM/satellite-config-actions@v1
       with:
-        apikey: "${IBM_CLOUD_API_KEY}"
+        apikey: ${IBM_CLOUD_API_KEY}
         filename: 'manifests/guestbook-deployment.yaml'
-        channel_id: "${SAT_CHANNEL_UUID}"
-        version_name: "guestbook-v${GITHUB_SHA}"
+        channel_id: ${SAT_CHANNEL_UUID}
+        version_name: guestbook-v${GITHUB_SHA}
