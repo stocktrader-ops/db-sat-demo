@@ -1,5 +1,9 @@
 FROM openliberty/open-liberty:kernel-slim-java11-openj9-ubi
 
+# for multi arch build
+ARG CREATE_OPENJ9_SCC=false
+ENV OPENJ9_SCC=false
+
 COPY --chown=1001:0 /target/liberty/wlp/usr/servers/defaultServer/resources /config/resources/
 COPY --chown=1001:0 /src/main/liberty/config/server.xml /config
 
