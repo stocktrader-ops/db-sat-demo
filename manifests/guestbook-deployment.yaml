@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: guestbook
-          image: quay.io/gas_stocktrader/guestbook:25e1ddbf2081283a69cf77d66094eb804620056a
+          image: quay.io/gas_stocktrader/guestbook:afee33f41e97a21757618fb009458a1b2a2b268c
           envFrom:
             - configMapRef:
                 name: guestbook-config
