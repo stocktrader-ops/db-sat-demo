@@ -1,0 +1,89 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: docker-build-and-deploy
+spec:
+  params:
+    - default: quay.io/gas_stocktrader/guestbook
+      name: IMAGE_NAME
+      type: string
+    - default: 'https://github.com/stocktrader-ops/db-sat-demo'
+      name: GIT_REPO
+      type: string
+    - default: main
+      name: GIT_REVISION
+      type: string
+    - default: guestbook
+      name: APP_NAME
+      type: string
+    - default: manifests/app-deploy.yaml
+      name: MANIFEST
+      type: string
+  tasks:
+    - name: fetch-repository
+      params:
+        - name: url
+          value: $(params.GIT_REPO)
+        - name: revision
+          value: $(params.GIT_REVISION)
+        - name: deleteExisting
+          value: 'true'
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: workspace
+    - name: build
+      params:
+        - name: image
+          value: $(params.IMAGE_NAME)
+        - name: docker-token-secret
+          value: quay-token
+      runAfter:
+        - maven
+      taskRef:
+        kind: ClusterTask
+        name: docker-buildx
+      workspaces:
+        - name: source
+          workspace: workspace
+    - name: deploy
+      params:
+        - name: SCRIPT
+          value: |
+            oc apply -f $(params.MANIFEST)
+            echo "-----------Displaying resources -----------"
+            oc get all -n guestbook      
+      runAfter:
+        - build
+      taskRef:
+        kind: Task
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: workspace
+    - name: maven
+      params:
+        - name: MAVEN_IMAGE
+          value: >-
+            gcr.io/cloud-builders/mvn@sha256:57523fc43394d6d9d2414ee8d1c85ed7a13460cbb268c3cd16d28cfb3859e641
+        - name: GOALS
+          value:
+            - package
+        - name: PROXY_PROTOCOL
+          value: http
+        - name: CONTEXT_DIR
+          value: .
+      runAfter:
+        - fetch-repository
+      taskRef:
+        kind: ClusterTask
+        name: maven
+      workspaces:
+        - name: source
+          workspace: workspace
+        - name: maven-settings
+          workspace: workspace
+  workspaces:
+    - name: workspace

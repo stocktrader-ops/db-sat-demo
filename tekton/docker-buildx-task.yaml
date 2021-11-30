@@ -1,0 +1,174 @@
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  annotations:
+    tekton.dev/displayName: docker-buildx
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: 'docker, build-image, push-image, dind, buildx, multi-arch'
+  name: docker-buildx
+  labels:
+    app.kubernetes.io/version: '0.1'
+spec:
+  description: >-
+    This task will build and push an image using docker buildx. The task will
+    build an out image out of a Dockerfile. This image will be pushed to an
+    image registry. The image will be built and pushed using a dind sidecar over
+    TCP+TLS.    
+  params:
+    - description: Reference of the image docker will produce.
+      name: image
+      type: string
+    - default: 'docker.io/library/docker:19.03.14'
+      description: The location of the docker builder image.
+      name: builder_image
+      type: string
+    - default: ./Dockerfile
+      description: Path to the Dockerfile to build.
+      name: dockerfile
+      type: string
+    - default: .
+      description: Path to the directory to use as context.
+      name: context
+      type: string
+    - default: '--platform=linux/amd64,linux/s390x --no-cache'
+      description: Extra parameters passed for the build command when building images.
+      name: build_extra_args
+      type: string
+    - default: '--push'
+      description: Extra parameters passed for the push command when pushing images.
+      name: push_extra_args
+      type: string
+    - default: ''
+      description: Allows the user to push to an insecure registry that has been specified
+      name: insecure_registry
+      type: string
+    - default: docker-token
+      description: name of the secret holding the docker-token
+      name: docker-token-secret
+      type: string
+  results:
+    - description: Digest of the image just built.
+      name: IMAGE_DIGEST
+  sidecars:
+    - args:
+        - '--storage-driver=vfs'
+        - '--userland-proxy=false'
+        - '--debug'
+      env:
+        - name: DOCKER_TLS_CERTDIR
+          value: /certs
+      image: 'docker:19.03.14-dind'
+      name: server
+      readinessProbe:
+        exec:
+          command:
+            - ls
+            - /certs/client/ca.pem
+        periodSeconds: 1
+      resources: {}
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /certs/client
+          name: dind-certs
+  steps:
+    - env:
+        - name: DOCKER_HOST
+          value: 'tcp://localhost:2376'
+        - name: DOCKER_TLS_VERIFY
+          value: '1'
+        - name: DOCKER_CERT_PATH
+          value: /certs/client
+        - name: DOCKERHUB_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: $(params.docker-token-secret)
+        - name: DOCKERHUB_PASS
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: $(params.docker-token-secret)
+        - name: DOCKERHUB_HOST
+          valueFrom:
+            secretKeyRef:
+              key: host
+              name: $(params.docker-token-secret)
+      image: $(params.builder_image)
+      name: buildx-build-push
+      resources: {}
+      script: >
+        # install depends  
+
+        apk add curl jq
+
+        # enable experimental buildx features  
+
+        export DOCKER_BUILDKIT=1 
+
+        export DOCKER_CLI_EXPERIMENTAL=enabled
+
+        # Download latest buildx bin from github 
+
+        mkdir -p ~/.docker/cli-plugins/ 
+
+        BUILDX_LATEST_BIN_URI=$(curl -s -L
+        https://github.com/docker/buildx/releases/latest | grep 'linux-amd64' |
+        grep 'href' | sed 's/.*href="/https:\/\/github.com/g;
+        s/amd64".*/amd64/g') 
+
+        curl -s -L ${BUILDX_LATEST_BIN_URI} -o ~/.docker/cli-plugins/docker-buildx
+
+        chmod a+x ~/.docker/cli-plugins/docker-buildx
+
+
+        # Get and run the latest docker/binfmt tag to use its qemu parts
+
+
+        # BINFMT_IMAGE_TAG=$(curl -s
+        https://registry.hub.docker.com/v2/repositories/docker/binfmt/tags | jq
+        '.results | sort_by(.last_updated)[-1].name' -r)
+
+        # echo "BINFMT_IMAGE_TAG: ${BINFMT_IMAGE_TAG}"
+
+        uname -a
+
+        docker buildx ls
+
+        # add qemu bins 
+
+        docker run --rm --privileged tonistiigi/binfmt:latest --install all
+
+        docker context create tls-environment
+
+        # docker run --rm --privileged
+        docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+
+        # create the multibuilder 
+
+        # docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+        docker buildx create --name multibuilder  --use tls-environment 
+
+        docker buildx use multibuilder
+
+        docker buildx ls
+
+        # login to a registry 
+
+        docker login -u ${DOCKERHUB_USER} -p ${DOCKERHUB_PASS} ${DOCKERHUB_HOST}
+
+        # build the containers and push them to the registry then display the
+        images
+
+        docker buildx build $(params.build_extra_args) \
+            -f $(params.dockerfile) -t $(params.image) $(params.context) $(params.push_extra_args)      
+      volumeMounts:
+        - mountPath: /certs/client
+          name: dind-certs
+      workingDir: $(workspaces.source.path)
+  volumes:
+    - emptyDir: {}
+      name: dind-certs
+  workspaces:
+    - name: source
