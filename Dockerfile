@@ -1,4 +1,5 @@
-FROM openliberty/open-liberty:kernel-slim-java11-openj9-ubi
+FROM openliberty/open-liberty:21.0.0.9-full-java11-openj9-ubi
+# FROM openliberty/open-liberty:kernel-slim-java11-openj9-ubi
 
 # for multi arch build
 ARG CREATE_OPENJ9_SCC=false
@@ -11,7 +12,7 @@ COPY --chown=1001:0 target/*.war /config/apps
 
 # This script will add the requested XML snippets to enable Liberty features and grow image to be fit-for-purpose using featureUtility. 
 # Only available in 'kernel-slim'. The 'full' tag already includes all features for convenience.
-RUN features.sh
+# RUN features.sh
 
 RUN configure.sh
 
